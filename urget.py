@@ -8,6 +8,7 @@ from colorama import Fore
 parser = argparse.ArgumentParser(description='UR Get')
 parser.add_argument('url', help='URL')
 parser.add_argument('--json', action='store_true')
+parser.add_argument('--quality')
 args = parser.parse_args()
 
 print(Fore.MAGENTA + '------')
@@ -51,7 +52,10 @@ setQuality('hd')
 if file_path == '':
   setQuality('flash')
 
-print_info('ID', str(json_data['series_id']))
+if args.quality:
+  setQuality(args.quality)
+
+# print_info('ID', str(json_data['series_id']))
 print_info('Title', json_data['title'])
 print_info('Quality', quality)
 print_info('Image', json_data['image'])
