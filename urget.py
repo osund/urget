@@ -8,6 +8,7 @@ from colorama import Fore
 parser = argparse.ArgumentParser(description='UR Get')
 parser.add_argument('url', help='URL')
 parser.add_argument('--json', action='store_true')
+parser.add_argument('--rawtitle', action='store_true')
 parser.add_argument('--quality')
 args = parser.parse_args()
 
@@ -66,7 +67,14 @@ ip = streaming_config['streamer']['redirect']
 hls_file = streaming_config['http_streaming']['hls_file']
 file_path = 'ondemand/_definst_/mp4:' + file_path + '/' + hls_file
 ffmpeg_flags = '-acodec copy -vcodec copy -absf aac_adtstoasc'
-command = 'ffmpeg -i "http://' + ip + '/' + file_path + '" ' + ffmpeg_flags + ' "' + file_name + '"'
+command = 'ffmpeg -i "http://' + ip + '/' + file_path + '" ' + ffmpeg_flags
+
+title_file_name = json_data['title'].replace(' ', '_')
+
+if args.rawtitle:
+  command += ' ' + file_name
+else:
+  command += ' ' + title_file_name + '.mp4'
 
 print_info('Downloading video (using ffmpeg)', Fore.MAGENTA + file_name)
 print(Fore.WHITE)
@@ -80,4 +88,8 @@ subtitle_urls = json_data['subtitles'].split(',')
 for x in range(0, len(subtitle_labels)):
   subtitle_file_name = subtitle_urls[x].split('/')[-1]
   print_info('Downloading subtitle (using wget)', subtitle_labels[x] + ' - ' + Fore.MAGENTA + subtitle_file_name)
-  subprocess.call('wget ' + subtitle_urls[x], shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+  if args.rawtitle:
+    subprocess.call('wget ' + subtitle_urls[x], shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+  else:
+    subtitle_file_name = title_file_name + '_' + subtitle_labels[x].replace(' ', '_').replace('(', '').replace(')', '') + '.tt'
+    subprocess.call('wget ' + subtitle_urls[x] + ' -O ' + subtitle_file_name, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
