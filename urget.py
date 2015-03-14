@@ -3,7 +3,7 @@ import argparse
 import requests
 import json
 import subprocess
-from colorama import Fore
+from colorama import Fore, Back
 
 parser = argparse.ArgumentParser(description='UR Get')
 parser.add_argument('url', help='URL')
@@ -61,6 +61,11 @@ print_info('Title', json_data['title'])
 print_info('Quality', quality)
 print_info('Image', json_data['image'])
 
+if json_data['only_in_sweden']:
+  print(Back.WHITE + Fore.BLACK + '//////////////////////////////////' + Back.RESET + Fore.RESET)
+  print(Back.WHITE + Fore.BLACK + 'Warning: Only available in Sweden!' + Back.RESET + Fore.RESET)
+  print(Back.WHITE + Fore.BLACK + '//////////////////////////////////' + Back.RESET + Fore.RESET)
+
 # Download video (.mp4).
 streaming_config = json_data['streaming_config']
 ip = streaming_config['streamer']['redirect']
@@ -71,15 +76,17 @@ command = 'ffmpeg -i "http://' + ip + '/' + file_path + '" ' + ffmpeg_flags
 
 title_file_name = json_data['title'].replace(' ', '_')
 
-if args.rawtitle:
-  command += ' ' + file_name
-else:
-  command += ' ' + title_file_name + '.mp4'
+if not args.rawtitle:
+  file_name = ' ' + title_file_name + '.mp4'
+
+command += ' ' + file_name
 
 print_info('Downloading video (using ffmpeg)', Fore.MAGENTA + file_name)
 print(Fore.WHITE)
 subprocess.call(command, shell=True)
 print(Fore.RESET)
+
+# 5331abf1585c95dbda61afc0ffd4a53afe739406c97027dcbc70946ebb34ddc4
 
 # Download subtitles (.tt).
 subtitle_labels = json_data['subtitle_labels'].split(',')
